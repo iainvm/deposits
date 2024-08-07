@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package investors.v1;
+
+option go_package = "investors/v1;investorsv1";
+
+message OnboardRequest {
+    string name = 1;
+}
+
+message OnboardResponse {
+    string id = 1;
+    string name = 2;
+}
+
+service InvestorsService {
+    rpc Onboard(OnboardRequest) returns (OnboardResponse) {}
+}

@@ -34,6 +34,12 @@
 
             # Dev Tools
             go-task
+
+            # gRPC deps
+            buf
+            protoc-gen-go
+            protoc-gen-connect-go
+            grpcurl
           ];
         };
       });

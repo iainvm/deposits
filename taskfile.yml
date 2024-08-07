@@ -5,3 +5,16 @@ tasks:
     silent: true
     cmds:
       - go test .
+
+  buf-gen:
+    dir: ./protos
+    silent: true
+    cmds:
+      - buf lint
+      - buf generate
+
+  ping:
+    silent: true
+    cmds:
+      - cmd: |
+          grpcurl -protoset <(buf build -o -) -plaintext -d '{"name": "Jane"}' localhost:8080 investors.v1.InvestorsService/Onboard
