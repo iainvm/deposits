@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package investors.v1;
+package deposits.v1;
 
-option go_package = "investors/v1;investorsv1";
+option go_package = "deposits/v1;depositsv1";
 
 message OnboardRequest {
     string name = 1;
