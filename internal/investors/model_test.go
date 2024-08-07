@@ -1,9 +1,9 @@
-package investor_test
+package investors_test
 
 import (
 	"testing"
 
-	"github.com/iainvm/deposits/internal/investor"
+	"github.com/iainvm/deposits/internal/investors"
 	"github.com/stretchr/testify/require"
 )
 
@@ -13,25 +13,25 @@ func TestName(t *testing.T) {
 		desc         string
 		name         string
 		expectedErr  error
-		expectedName investor.Name
+		expectedName investors.Name
 	}{
 		{
 			desc:         "Successful Name",
 			name:         "Iain Majer",
 			expectedErr:  nil,
-			expectedName: investor.Name("Iain Majer"),
+			expectedName: investors.Name("Iain Majer"),
 		},
 		{
 			desc:         "Blank Name",
 			name:         "",
-			expectedErr:  investor.ErrBlankName,
-			expectedName: investor.Name(""),
+			expectedErr:  investors.ErrBlankName,
+			expectedName: investors.Name(""),
 		},
 	}
 
 	for _, testCase := range testCases {
 		t.Run(testCase.desc, func(t *testing.T) {
-			name, err := investor.NewName(testCase.name)
+			name, err := investors.NewName(testCase.name)
 
 			if testCase.expectedErr != nil {
 				require.ErrorIs(t, err, testCase.expectedErr)

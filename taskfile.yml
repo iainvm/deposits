@@ -7,7 +7,7 @@ tasks:
       - go test .
 
   buf-gen:
-    dir: ./protos
+    dir: ./application/grpc/protos
     silent: true
     cmds:
       - buf lint
@@ -18,3 +18,25 @@ tasks:
     cmds:
       - cmd: |
           grpcurl -protoset <(buf build -o -) -plaintext -d '{"name": "Jane"}' localhost:8080 investors.v1.InvestorsService/Onboard
+
+  curl:
+    silent: true
+    cmds:
+      - cmd: |
+          curl --header "Content-Type: application/json" --data '{"name": "Jane"}' http://localhost:8080/investors.v1.InvestorsService/Onboard
+
+  dockerd:
+    silent: true
+    cmds:
+      - dockerd-rootless
+
+  docker:
+    silent: true
+    cmds:
+      - docker compose -f infrastructure/docker-compose.yml up -d --build
+      - docker compose -f infrastructure/docker-compose.yml logs -f
+
+  clear-docker:
+    silent: true
+    cmds:
+      - docker compose -f infrastructure/docker-compose.yml down -v

@@ -4,7 +4,7 @@ managed:
   enabled: true
   override:
     - file_option: go_package_prefix
-      value: github.com/iainvm/deposits/gen
+      value: github.com/iainvm/deposits/application/grpc/gen
 
 plugins:
   - local: protoc-gen-go

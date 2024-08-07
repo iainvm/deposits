@@ -21,8 +21,12 @@
         default = pkgs.mkShell {
           hardeningDisable = [ "fortify" ];
 
+          shellHook = ''
+            export DOCKER_HOST=unix://$XDG_RUNTIME_DIR/docker.sock
+          '';
+
           packages = with pkgs; [
-            # go (version is specified by overlay)
+            # Go
             go_1_22
 
             # Go Tools
@@ -33,13 +37,17 @@
             delve
 
             # Dev Tools
-            go-task
+            go-task # Taskfile (nicer than Makefile)
 
-            # gRPC deps
+            # gRPC
             buf
             protoc-gen-go
             protoc-gen-connect-go
             grpcurl
+
+            # Rootless Docker
+            rootlesskit
+            docker
           ];
         };
       });
