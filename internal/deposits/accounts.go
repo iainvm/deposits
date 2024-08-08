@@ -71,6 +71,7 @@ func (id AccountId) String() string {
 	return string(id)
 }
 
+// NewAccount creates a new Account with a new Id
 func NewAccount(wrapperType WrapperType, nominalAmount int64) (*Account, error) {
 	// Generate Id
 	id, err := newAccountId()
@@ -107,6 +108,7 @@ func validateWrapperType(wrapperType WrapperType) error {
 	return ErrInvalidWrapperType
 }
 
+// ParseAccount parses the given data into a Account type, ensuring it's valid data
 func ParseAccount(id string, wrapperType int, nominalAmount int64, totalAllocatedAmount int64) (*Account, error) {
 	accountId, err := ParseAccountId(id)
 	if err != nil {
@@ -155,6 +157,7 @@ func (nominalAmount NominalAmount) Int64() int64 {
 	return int64(nominalAmount)
 }
 
+// AddReceipt validates that it can allocate the receipt to the Account, then updates account information
 func (account *Account) AddReceipt(receipt *Receipt) error {
 	err := account.IncreaseTotalAllocationAmount(TotalAllocatedAmount(receipt.AllocatedAmount))
 	if err != nil {
@@ -166,6 +169,7 @@ func (account *Account) AddReceipt(receipt *Receipt) error {
 	return nil
 }
 
+// IncreaseTotalAllocationAmount increases the TotalAllocatedAmount by the given amount
 func (account *Account) IncreaseTotalAllocationAmount(amount TotalAllocatedAmount) error {
 	newAmount := account.TotalAllocatedAmount.Int64() + amount.Int64()
 
@@ -182,6 +186,7 @@ func (account *Account) IncreaseTotalAllocationAmount(amount TotalAllocatedAmoun
 	return nil
 }
 
+// SetTotalAllocationAmount sets the TotalAllocatedAmount to the given amount
 func (account *Account) SetTotalAllocationAmount(amount TotalAllocatedAmount) error {
 
 	// ISA and SIPP accounts can't exceed Nominal Amount

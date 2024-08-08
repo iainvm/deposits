@@ -77,7 +77,7 @@ func PlayThrough(investorsService *investors.Service, depositsService *deposits.
 	ctx := context.Background()
 
 	// Create investor data
-	investor, err := investors.New("Iain")
+	investor, err := investors.NewInvestor("Iain")
 	if err != nil {
 		panic(err)
 	}
@@ -89,7 +89,7 @@ func PlayThrough(investorsService *investors.Service, depositsService *deposits.
 	}
 
 	// Create Deposit
-	deposit, err := deposits.New()
+	deposit, err := deposits.NewDeposit()
 	if err != nil {
 		panic(err)
 	}

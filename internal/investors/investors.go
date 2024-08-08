@@ -19,7 +19,8 @@ type Investor struct {
 	Name Name
 }
 
-func New(name string) (*Investor, error) {
+// NewInvestor creates a new Investor, ensuring the given data is valid
+func NewInvestor(name string) (*Investor, error) {
 	id, err := newInvestorId()
 	if err != nil {
 		return nil, nil
@@ -49,6 +50,7 @@ func newInvestorId() (InvestorId, error) {
 	return InvestorId(id.String()), nil
 }
 
+// ParseInvestorId ensures the given `id` is a valid format for an Investor Id
 func ParseInvestorId(id string) (InvestorId, error) {
 	_, err := uuid.Parse(id)
 	if err != nil {
@@ -64,6 +66,7 @@ func (id InvestorId) String() string {
 
 type Name string
 
+// NewName creates a new Name struct ensuring the data is valid
 func NewName(name string) (Name, error) {
 	if name == "" {
 		return "", ErrBlankName

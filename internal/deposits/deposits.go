@@ -42,7 +42,8 @@ func (id DepositId) String() string {
 	return string(id)
 }
 
-func New() (*Deposit, error) {
+// NewDeposit creates a new Deposit with a new Id
+func NewDeposit() (*Deposit, error) {
 	// Generate Id
 	id, err := newDepositId()
 	if err != nil {
@@ -55,6 +56,7 @@ func New() (*Deposit, error) {
 	}, nil
 }
 
+// ParseDeposit parses the given data into a Deposit type, ensuring it's valid data
 func ParseDeposit(id string) (*Deposit, error) {
 	depositId, err := ParseDepositId(id)
 	if err != nil {

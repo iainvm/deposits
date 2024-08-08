@@ -14,6 +14,6 @@ func TestParseDeposits(t *testing.T) {
 }
 
 func TestNewDeposits(t *testing.T) {
-	_, err := deposits.New()
+	_, err := deposits.NewDeposit()
 	require.NoError(t, err)
 }

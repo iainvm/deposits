@@ -104,7 +104,7 @@ func (h *DepositsHandler) Create(ctx context.Context, req *connect.Request[depos
 }
 
 func createDomainDeposit(reqDeposit *depositsv1.Deposit) (*deposits.Deposit, error) {
-	deposit, err := deposits.New()
+	deposit, err := deposits.NewDeposit()
 	if err != nil {
 		return nil, err
 	}

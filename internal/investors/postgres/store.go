@@ -25,6 +25,7 @@ type InvestorRow struct {
 	Name string `db:"name"`
 }
 
+// SaveInvestor saves the given investor to the connected database
 func (store Store) SaveInvestor(ctx context.Context, investor *investors.Investor) error {
 	// Define query separately for easy editting
 	const query = `--sql

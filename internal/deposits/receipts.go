@@ -16,6 +16,7 @@ type AllocatedAmount int64
 
 type ReceiptId string
 
+// NewReceipt creates a new Receipt with a new Id
 func NewReceipt(allocatedAmount int64) (*Receipt, error) {
 	id, err := newReceiptId()
 	if err != nil {
@@ -32,6 +33,7 @@ func NewReceipt(allocatedAmount int64) (*Receipt, error) {
 	}, nil
 }
 
+// ParseReceipt parses the given data into a Receipt type, ensuring it's valid data
 func ParseReceipt(id string, allocatedAmount int64) (*Receipt, error) {
 	receiptId, err := ParseReceiptId(id)
 	if err != nil {

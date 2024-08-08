@@ -30,7 +30,7 @@ func (h *InvestorsHandler) Onboard(ctx context.Context, req *connect.Request[dep
 	h.log.With("header", req.Header()).With("request", req.Msg).Info("Onboard Called")
 
 	// Create domain model
-	investor, err := investors.New(req.Msg.Investor.Name)
+	investor, err := investors.NewInvestor(req.Msg.Investor.Name)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}

@@ -23,6 +23,7 @@ func newPotId() (PotId, error) {
 	return PotId(id.String()), nil
 }
 
+// ParsePotId parses the given data into a PotId type, ensuring it's valid data
 func ParsePotId(id string) (PotId, error) {
 	_, err := uuid.Parse(id)
 	if err != nil {
@@ -46,6 +47,7 @@ func (potName PotName) String() string {
 	return string(potName)
 }
 
+// NewPot creates a new Pot with a new Id
 func NewPot(name string) (*Pot, error) {
 	// Generate Id
 	id, err := newPotId()
@@ -65,6 +67,7 @@ func NewPot(name string) (*Pot, error) {
 	}, nil
 }
 
+// ParsePot parses the given data into a Pot type, ensuring it's valid data
 func ParsePot(id string, name string) (*Pot, error) {
 	potId, err := ParsePotId(id)
 	if err != nil {

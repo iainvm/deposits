@@ -26,6 +26,7 @@ func NewService(repository Repository) *Service {
 	}
 }
 
+// ReceiveReceipt processes the receipt, validates it, and updates the attached account information
 func (service *Service) ReceiveReceipt(ctx context.Context, accountId AccountId, receipt *Receipt) error {
 
 	// Get Account
@@ -55,6 +56,7 @@ func (service *Service) ReceiveReceipt(ctx context.Context, accountId AccountId,
 	return nil
 }
 
+// Get returns all data for a deposit
 func (service *Service) Get(ctx context.Context, id DepositId) (*Deposit, error) {
 	deposit, err := service.repository.GetFullDeposit(ctx, id)
 	if err != nil {
@@ -63,6 +65,7 @@ func (service *Service) Get(ctx context.Context, id DepositId) (*Deposit, error)
 	return deposit, nil
 }
 
+// Create handles creating a deposits for an investor
 func (service *Service) Create(ctx context.Context, investorId investors.InvestorId, deposit *Deposit) error {
 	// Save Deposit
 	err := service.repository.SaveDeposit(ctx, investorId, *deposit)

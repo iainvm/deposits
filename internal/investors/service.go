@@ -16,6 +16,7 @@ func NewService(store Repository) *Service {
 	}
 }
 
+// Onboard will take the given investor data and save it to the repository
 func (service Service) Onboard(ctx context.Context, investor *Investor) error {
 	// Store data
 	err := service.repository.SaveInvestor(ctx, investor)
