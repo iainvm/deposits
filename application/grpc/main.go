@@ -67,7 +67,7 @@ func main() {
 	logger.With("host", config.DBConfig.Host).With("port", config.DBConfig.Port).Info("Connected to DB")
 
 	// Investors Handler
-	investorsServer := handlers.NewInvestorsHandler(
+	investorsHandler := handlers.NewInvestorsHandler(
 		logger,
 		investors.NewService(
 			investorsStore.NewStore(db),
@@ -75,7 +75,7 @@ func main() {
 	)
 
 	// Deposits Handler
-	depositsStore := handlers.NewDepositsHandler(
+	depositsHandler := handlers.NewDepositsHandler(
 		logger,
 		deposits.NewService(
 			depositsStore.NewStore(db),
@@ -84,9 +84,9 @@ func main() {
 
 	// Register handlers
 	mux := http.NewServeMux()
-	path, handler := depositsv1connect.NewInvestorsServiceHandler(investorsServer)
+	path, handler := depositsv1connect.NewInvestorsServiceHandler(investorsHandler)
 	mux.Handle(path, handler)
-	path, handler = depositsv1connect.NewDepositsServiceHandler(depositsStore)
+	path, handler = depositsv1connect.NewDepositsServiceHandler(depositsHandler)
 	mux.Handle(path, handler)
 
 	// Listen

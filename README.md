@@ -25,3 +25,7 @@ If you already have these dependencies in your system there is no need to use th
 If you have Taskfile installed then a simple `task docker` will run the `docker-compose.yaml` and bring up the `api` and `postrgres` contianers
 
 `docker compose -f infrastructure/docker-compose.yml up -d --build` ran in the root of the project will work as well
+
+## Testing
+
+There is a small playthrough of the server and some checks in the cli [main.go](application/cli/main.go). Can either run the entire file, or set through it with an IDE
