@@ -91,9 +91,13 @@ func main() {
 
 	// Listen
 	logger.With("port", config.Port).Info("Starting listener")
-	http.ListenAndServe(
+	err = http.ListenAndServe(
 		fmt.Sprintf(":%s", config.Port),
 		// Use h2c so we can serve HTTP/2 without TLS.
 		h2c.NewHandler(mux, &http2.Server{}),
 	)
+	if err != nil {
+		logger.With("error", err).Error("failed to listen")
+		panic(err)
+	}
 }
