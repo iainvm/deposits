@@ -41,6 +41,16 @@ tasks:
           }
           EOM
 
+  deposit-get:
+    silent: true
+    cmds:
+      - cmd: |
+          grpcurl -protoset <(buf build -o -) -plaintext -d @ localhost:8080 deposits.v1.DepositsService/Get <<EOM
+          {
+            "id": "{{.CLI_ARGS}}"
+          }
+          EOM
+
   deposit-create:
     silent: true
     cmds:

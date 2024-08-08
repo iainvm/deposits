@@ -6,6 +6,15 @@ option go_package = "deposits/v1;depositsv1";
 
 service DepositsService {
   rpc Create(CreateRequest) returns (CreateResponse);
+  rpc Get(GetRequest) returns (GetResponse);
+}
+
+message GetRequest {
+  string id = 1;
+}
+
+message GetResponse {
+  Deposit deposit = 1;
 }
 
 message CreateRequest {

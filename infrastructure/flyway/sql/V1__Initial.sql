@@ -19,6 +19,7 @@ CREATE TABLE pots (
 CREATE TABLE accounts (
     id VARCHAR PRIMARY KEY,
     pot_id VARCHAR,
+    wrapper_type INTEGER,
     nominal_amount INTEGER,
     FOREIGN KEY (pot_id) REFERENCES pots(id)
 );

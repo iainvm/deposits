@@ -35,17 +35,21 @@ const (
 const (
 	// DepositsServiceCreateProcedure is the fully-qualified name of the DepositsService's Create RPC.
 	DepositsServiceCreateProcedure = "/deposits.v1.DepositsService/Create"
+	// DepositsServiceGetProcedure is the fully-qualified name of the DepositsService's Get RPC.
+	DepositsServiceGetProcedure = "/deposits.v1.DepositsService/Get"
 )
 
 // These variables are the protoreflect.Descriptor objects for the RPCs defined in this package.
 var (
 	depositsServiceServiceDescriptor      = v1.File_deposits_v1_deposits_proto.Services().ByName("DepositsService")
 	depositsServiceCreateMethodDescriptor = depositsServiceServiceDescriptor.Methods().ByName("Create")
+	depositsServiceGetMethodDescriptor    = depositsServiceServiceDescriptor.Methods().ByName("Get")
 )
 
 // DepositsServiceClient is a client for the deposits.v1.DepositsService service.
 type DepositsServiceClient interface {
 	Create(context.Context, *connect.Request[v1.CreateRequest]) (*connect.Response[v1.CreateResponse], error)
+	Get(context.Context, *connect.Request[v1.GetRequest]) (*connect.Response[v1.GetResponse], error)
 }
 
 // NewDepositsServiceClient constructs a client for the deposits.v1.DepositsService service. By
@@ -64,12 +68,19 @@ func NewDepositsServiceClient(httpClient connect.HTTPClient, baseURL string, opt
 			connect.WithSchema(depositsServiceCreateMethodDescriptor),
 			connect.WithClientOptions(opts...),
 		),
+		get: connect.NewClient[v1.GetRequest, v1.GetResponse](
+			httpClient,
+			baseURL+DepositsServiceGetProcedure,
+			connect.WithSchema(depositsServiceGetMethodDescriptor),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // depositsServiceClient implements DepositsServiceClient.
 type depositsServiceClient struct {
 	create *connect.Client[v1.CreateRequest, v1.CreateResponse]
+	get    *connect.Client[v1.GetRequest, v1.GetResponse]
 }
 
 // Create calls deposits.v1.DepositsService.Create.
@@ -77,9 +88,15 @@ func (c *depositsServiceClient) Create(ctx context.Context, req *connect.Request
 	return c.create.CallUnary(ctx, req)
 }
 
+// Get calls deposits.v1.DepositsService.Get.
+func (c *depositsServiceClient) Get(ctx context.Context, req *connect.Request[v1.GetRequest]) (*connect.Response[v1.GetResponse], error) {
+	return c.get.CallUnary(ctx, req)
+}
+
 // DepositsServiceHandler is an implementation of the deposits.v1.DepositsService service.
 type DepositsServiceHandler interface {
 	Create(context.Context, *connect.Request[v1.CreateRequest]) (*connect.Response[v1.CreateResponse], error)
+	Get(context.Context, *connect.Request[v1.GetRequest]) (*connect.Response[v1.GetResponse], error)
 }
 
 // NewDepositsServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -94,10 +111,18 @@ func NewDepositsServiceHandler(svc DepositsServiceHandler, opts ...connect.Handl
 		connect.WithSchema(depositsServiceCreateMethodDescriptor),
 		connect.WithHandlerOptions(opts...),
 	)
+	depositsServiceGetHandler := connect.NewUnaryHandler(
+		DepositsServiceGetProcedure,
+		svc.Get,
+		connect.WithSchema(depositsServiceGetMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/deposits.v1.DepositsService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case DepositsServiceCreateProcedure:
 			depositsServiceCreateHandler.ServeHTTP(w, r)
+		case DepositsServiceGetProcedure:
+			depositsServiceGetHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -109,4 +134,8 @@ type UnimplementedDepositsServiceHandler struct{}
 
 func (UnimplementedDepositsServiceHandler) Create(context.Context, *connect.Request[v1.CreateRequest]) (*connect.Response[v1.CreateResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("deposits.v1.DepositsService.Create is not implemented"))
+}
+
+func (UnimplementedDepositsServiceHandler) Get(context.Context, *connect.Request[v1.GetRequest]) (*connect.Response[v1.GetResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("deposits.v1.DepositsService.Get is not implemented"))
 }

@@ -24,6 +24,15 @@ func newDepositId() (DepositId, error) {
 	return DepositId(id.String()), nil
 }
 
+func ParseDepositId(id string) (DepositId, error) {
+	_, err := uuid.Parse(id)
+	if err != nil {
+		return "", err
+	}
+
+	return DepositId(id), nil
+}
+
 func (id DepositId) String() string {
 	return string(id)
 }
@@ -43,6 +52,17 @@ func New() (*Deposit, error) {
 	// Create Deposit
 	return &Deposit{
 		Id: id,
+	}, nil
+}
+
+func ParseDeposit(id string) (*Deposit, error) {
+	depositId, err := ParseDepositId(id)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Deposit{
+		Id: depositId,
 	}, nil
 }
 

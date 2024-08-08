@@ -22,11 +22,32 @@ func NewDepositsHandler(log *slog.Logger, depositsService *deposits.Service) *De
 	}
 }
 
+func (h *DepositsHandler) Get(ctx context.Context, req *connect.Request[depositsv1.GetRequest]) (*connect.Response[depositsv1.GetResponse], error) {
+	h.log.With("header", req.Header()).With("request", req.Msg).Info("Get Called")
+
+	depositId, err := deposits.ParseDepositId(req.Msg.Id)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+
+	deposit, err := h.depostitsService.Get(ctx, depositId)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	// Create response
+	res := connect.NewResponse(&depositsv1.GetResponse{
+		Deposit: createResponseDeposit(*deposit),
+	})
+	res.Header().Set("Deposit-Version", "v1")
+	return res, nil
+}
+
 func (h *DepositsHandler) Create(ctx context.Context, req *connect.Request[depositsv1.CreateRequest]) (*connect.Response[depositsv1.CreateResponse], error) {
-	h.log.With("header", req.Header()).With("request", req.Msg).Info("Onboard Called")
+	h.log.With("header", req.Header()).With("request", req.Msg).Info("Create Called")
 
 	// Create Domain Model
-	deposit, err := createDeposit(req.Msg.Deposit)
+	deposit, err := createDomainDeposit(req.Msg.Deposit)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
@@ -43,14 +64,14 @@ func (h *DepositsHandler) Create(ctx context.Context, req *connect.Request[depos
 	}
 
 	// Create response
-	res := connect.NewResponse(
-		createResponse(*deposit),
-	)
-	res.Header().Set("Investor-Version", "v1")
+	res := connect.NewResponse(&depositsv1.CreateResponse{
+		Deposit: createResponseDeposit(*deposit),
+	})
+	res.Header().Set("Deposit-Version", "v1")
 	return res, nil
 }
 
-func createDeposit(reqDeposit *depositsv1.Deposit) (*deposits.Deposit, error) {
+func createDomainDeposit(reqDeposit *depositsv1.Deposit) (*deposits.Deposit, error) {
 	deposit, err := deposits.New()
 	if err != nil {
 		return nil, err
@@ -67,7 +88,7 @@ func createDeposit(reqDeposit *depositsv1.Deposit) (*deposits.Deposit, error) {
 		for _, reqAccount := range reqPot.Accounts {
 			// Get Wrapper Type
 			wrapperType := deposits.WrapperType(reqAccount.WrapperType)
-			account, err := deposits.NewAccount(wrapperType, int(reqAccount.NominalAmount))
+			account, err := deposits.NewAccount(wrapperType, reqAccount.NominalAmount)
 			if err != nil {
 				return nil, err
 			}
@@ -81,14 +102,12 @@ func createDeposit(reqDeposit *depositsv1.Deposit) (*deposits.Deposit, error) {
 	return deposit, nil
 }
 
-func createResponse(deposit deposits.Deposit) *depositsv1.CreateResponse {
+func createResponseDeposit(deposit deposits.Deposit) *depositsv1.Deposit {
 
 	// Create deposit
-	response := &depositsv1.CreateResponse{
-		Deposit: &depositsv1.Deposit{
-			Id:   deposit.Id.String(),
-			Pots: []*depositsv1.Pot{},
-		},
+	response := &depositsv1.Deposit{
+		Id:   deposit.Id.String(),
+		Pots: []*depositsv1.Pot{},
 	}
 
 	// Attach pots
@@ -111,7 +130,7 @@ func createResponse(deposit deposits.Deposit) *depositsv1.CreateResponse {
 			responsePot.Accounts = append(responsePot.Accounts, responseAccount)
 		}
 
-		response.Deposit.Pots = append(response.Deposit.Pots, responsePot)
+		response.Pots = append(response.Pots, responsePot)
 	}
 
 	return response

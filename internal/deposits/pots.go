@@ -23,6 +23,15 @@ func newPotId() (PotId, error) {
 	return PotId(id.String()), nil
 }
 
+func ParsePotId(id string) (PotId, error) {
+	_, err := uuid.Parse(id)
+	if err != nil {
+		return "", err
+	}
+
+	return PotId(id), nil
+}
+
 func (id PotId) String() string {
 	return string(id)
 }
@@ -54,6 +63,25 @@ func NewPot(name string) (*Pot, error) {
 		Id:   id,
 		Name: potName,
 	}, nil
+}
+
+func ParsePot(id string, name string) (*Pot, error) {
+	potId, err := ParsePotId(id)
+	if err != nil {
+		return nil, err
+	}
+
+	potName, err := NewPotName(name)
+	if err != nil {
+		return nil, err
+	}
+
+	pot := &Pot{
+		Id:   potId,
+		Name: potName,
+	}
+
+	return pot, nil
 }
 
 func (pot *Pot) AddAccount(account *Account) error {

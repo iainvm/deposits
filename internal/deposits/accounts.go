@@ -21,6 +21,10 @@ type Account struct {
 	AllocatedAmount AllocatedAmount
 }
 
+func (wrapperType WrapperType) Int() int {
+	return int(wrapperType)
+}
+
 type AccountId string
 
 func newAccountId() (AccountId, error) {
@@ -32,6 +36,15 @@ func newAccountId() (AccountId, error) {
 	return AccountId(id.String()), nil
 }
 
+func ParseAccountId(id string) (AccountId, error) {
+	_, err := uuid.Parse(id)
+	if err != nil {
+		return "", err
+	}
+
+	return AccountId(id), nil
+}
+
 func (id AccountId) String() string {
 	return string(id)
 }
@@ -40,7 +53,7 @@ type NominalAmount int
 
 type AllocatedAmount int
 
-func NewAccount(wrapperType WrapperType, nominalAmount int) (*Account, error) {
+func NewAccount(wrapperType WrapperType, nominalAmount int64) (*Account, error) {
 	// Generate Id
 	id, err := newAccountId()
 	if err != nil {
@@ -60,7 +73,29 @@ func NewAccount(wrapperType WrapperType, nominalAmount int) (*Account, error) {
 	}, nil
 }
 
-func NewNominalAmount(amount int) (NominalAmount, error) {
+func ParseAccount(id string, wrapperType int, nominalAmount int64) (*Account, error) {
+	accountId, err := ParseAccountId(id)
+	if err != nil {
+		return nil, err
+	}
+
+	accountNominalAmount, err := NewNominalAmount(nominalAmount)
+	if err != nil {
+		return nil, err
+	}
+
+	accountWrapperType := WrapperType(wrapperType)
+
+	account := &Account{
+		Id:            accountId,
+		WrapperType:   accountWrapperType,
+		NominalAmount: accountNominalAmount,
+	}
+
+	return account, nil
+}
+
+func NewNominalAmount(amount int64) (NominalAmount, error) {
 	if amount < 0 {
 		return 0, ErrNominalAmountNegative
 	}
