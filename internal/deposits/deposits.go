@@ -15,6 +15,11 @@ var (
 
 type DepositId string
 
+type Deposit struct {
+	Id   DepositId
+	Pots []*Pot
+}
+
 func newDepositId() (DepositId, error) {
 	id, err := uuid.NewRandom()
 	if err != nil {
@@ -35,11 +40,6 @@ func ParseDepositId(id string) (DepositId, error) {
 
 func (id DepositId) String() string {
 	return string(id)
-}
-
-type Deposit struct {
-	Id   DepositId
-	Pots []*Pot
 }
 
 func New() (*Deposit, error) {

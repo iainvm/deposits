@@ -10,12 +10,16 @@ import (
 	"github.com/iainvm/deposits/internal/investors"
 )
 
-type InvestorsHandler struct {
-	log              *slog.Logger
-	investorsService *investors.Service
+type InvestorsService interface {
+	Onboard(ctx context.Context, investor *investors.Investor) error
 }
 
-func NewInvestorsHandler(log *slog.Logger, service *investors.Service) *InvestorsHandler {
+type InvestorsHandler struct {
+	log              *slog.Logger
+	investorsService InvestorsService
+}
+
+func NewInvestorsHandler(log *slog.Logger, service InvestorsService) *InvestorsHandler {
 	return &InvestorsHandler{
 		log:              log,
 		investorsService: service,

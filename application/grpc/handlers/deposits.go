@@ -10,12 +10,18 @@ import (
 	"github.com/iainvm/deposits/internal/investors"
 )
 
-type DepositsHandler struct {
-	log              *slog.Logger
-	depostitsService *deposits.Service
+type DepositsService interface {
+	ReceiveReceipt(ctx context.Context, accountId deposits.AccountId, receipt *deposits.Receipt) error
+	Get(ctx context.Context, id deposits.DepositId) (*deposits.Deposit, error)
+	Create(ctx context.Context, investorId investors.InvestorId, deposit *deposits.Deposit) error
 }
 
-func NewDepositsHandler(log *slog.Logger, depositsService *deposits.Service) *DepositsHandler {
+type DepositsHandler struct {
+	log              *slog.Logger
+	depostitsService DepositsService
+}
+
+func NewDepositsHandler(log *slog.Logger, depositsService DepositsService) *DepositsHandler {
 	return &DepositsHandler{
 		log:              log,
 		depostitsService: depositsService,

@@ -13,18 +13,18 @@ tasks:
       - buf lint
       - buf generate
 
-  dockerd:
+  docker-daemon:
     silent: true
     cmds:
       - dockerd-rootless
 
-  docker:
+  docker-up:
     silent: true
     cmds:
       - docker compose -f infrastructure/docker-compose.yml up -d --build
       - docker compose -f infrastructure/docker-compose.yml logs -f
 
-  clear-docker:
+  docker-clear:
     silent: true
     cmds:
       - docker compose -f infrastructure/docker-compose.yml down -v
@@ -99,7 +99,7 @@ tasks:
           {
             "account_id": "{{.CLI_ARGS}}",
             "receipt": {
-              "allocated_amount": 5000
+              "allocated_amount": 10000
             }
           }
           EOM
