@@ -25,13 +25,21 @@ services:
       - '5432:5432'
     volumes: 
       - db:/var/lib/postgresql/data
-      - ./init.sql:/docker-entrypoint-initdb.d/create_tables.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
       interval: 5s
       timeout: 5s
       retries: 5
-      
+
+  flyway:
+    image: flyway/flyway
+    command: -url=jdbc:postgresql://postgres:5432/postgres -schemas=public -user=postgres -password=postgres migrate
+    volumes:
+      - ./flyway:/flyway/sql
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   db:
     driver: local

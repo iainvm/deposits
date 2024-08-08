@@ -20,6 +20,7 @@ CREATE TABLE accounts (
     id VARCHAR PRIMARY KEY,
     pot_id VARCHAR,
     nominal INTEGER,
+    amount INTEGER,
     FOREIGN KEY (pot_id) REFERENCES pots(id)
 );
 

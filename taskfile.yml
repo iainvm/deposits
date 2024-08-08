@@ -13,18 +13,6 @@ tasks:
       - buf lint
       - buf generate
 
-  ping:
-    silent: true
-    cmds:
-      - cmd: |
-          grpcurl -protoset <(buf build -o -) -plaintext -d '{"name": "Jane"}' localhost:8080 investors.v1.InvestorsService/Onboard
-
-  curl:
-    silent: true
-    cmds:
-      - cmd: |
-          curl --header "Content-Type: application/json" --data '{"name": "Jane"}' http://localhost:8080/investors.v1.InvestorsService/Onboard
-
   dockerd:
     silent: true
     cmds:
@@ -40,3 +28,16 @@ tasks:
     silent: true
     cmds:
       - docker compose -f infrastructure/docker-compose.yml down -v
+
+  ping:
+    silent: true
+    cmds:
+      - cmd: |
+          grpcurl -protoset <(buf build -o -) -plaintext -d '{"name": "Jane"}' \
+            localhost:8080 deposits.v1.InvestorsService/Onboard
+
+  curl:
+    silent: true
+    cmds:
+      - cmd: |
+          curl --header "Content-Type: application/json" --data '{"name": "Jane"}' http://localhost:8080/investors.v1.InvestorsService/Onboard

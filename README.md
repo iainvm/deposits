@@ -17,6 +17,7 @@ If you already have these dependencies in your system there is no need to use th
 /internal                   # Contains all the domain business logic
 /common                     # Stores packages that are agnostic to this product
 /infrastructure             # Stored what's needed to build and host the server locally
+/infrastructure/flyway/sql  # Stored DB schema patches for use by flyway
 ```
 
 ## Host
