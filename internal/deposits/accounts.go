@@ -9,7 +9,9 @@ import (
 type WrapperType int
 
 var (
-	ErrNominalExceeded = errors.New("nomial value exceeded")
+	ErrNominalExceeded    = errors.New("nomial value exceeded")
+	ErrNegativeAmount     = errors.New("negative amount given")
+	ErrInvalidWrapperType = errors.New("invalid wrapper type given")
 )
 
 const (
@@ -35,8 +37,12 @@ func (amount TotalAllocatedAmount) Int64() int64 {
 	return int64(amount)
 }
 
-func NewTotalAllocatedAmount(amount int64) TotalAllocatedAmount {
-	return TotalAllocatedAmount(amount)
+func NewTotalAllocatedAmount(amount int64) (TotalAllocatedAmount, error) {
+	if amount < 0 {
+		return 0, ErrNegativeAmount
+	}
+
+	return TotalAllocatedAmount(amount), nil
 }
 
 func (wrapperType WrapperType) Int() int {
@@ -72,6 +78,12 @@ func NewAccount(wrapperType WrapperType, nominalAmount int64) (*Account, error) 
 		return nil, err
 	}
 
+	// Wrapper Type
+	err = validateWrapperType(wrapperType)
+	if err != nil {
+		return nil, err
+	}
+
 	accountNominalAmount, err := NewNominalAmount(nominalAmount)
 	if err != nil {
 		return nil, err
@@ -86,6 +98,15 @@ func NewAccount(wrapperType WrapperType, nominalAmount int64) (*Account, error) 
 	}, nil
 }
 
+func validateWrapperType(wrapperType WrapperType) error {
+	switch wrapperType {
+	case WrapperTypeGIA, WrapperTypeISA, WrapperTypeSIPP:
+		return nil
+	}
+
+	return ErrInvalidWrapperType
+}
+
 func ParseAccount(id string, wrapperType int, nominalAmount int64, totalAllocatedAmount int64) (*Account, error) {
 	accountId, err := ParseAccountId(id)
 	if err != nil {
@@ -98,14 +119,25 @@ func ParseAccount(id string, wrapperType int, nominalAmount int64, totalAllocate
 	}
 
 	accountWrapperType := WrapperType(wrapperType)
+	err = validateWrapperType(accountWrapperType)
+	if err != nil {
+		return nil, err
+	}
 
-	accountTotalAllocatedAmount := NewTotalAllocatedAmount(totalAllocatedAmount)
+	accountTotalAllocatedAmount, err := NewTotalAllocatedAmount(totalAllocatedAmount)
+	if err != nil {
+		return nil, err
+	}
 
 	account := &Account{
-		Id:                   accountId,
-		WrapperType:          accountWrapperType,
-		NominalAmount:        accountNominalAmount,
-		TotalAllocatedAmount: accountTotalAllocatedAmount,
+		Id:            accountId,
+		WrapperType:   accountWrapperType,
+		NominalAmount: accountNominalAmount,
+	}
+
+	err = account.SetTotalAllocationAmount(accountTotalAllocatedAmount)
+	if err != nil {
+		return nil, err
 	}
 
 	return account, nil
@@ -124,15 +156,41 @@ func (nominalAmount NominalAmount) Int64() int64 {
 }
 
 func (account *Account) AddReceipt(receipt *Receipt) error {
+	err := account.IncreaseTotalAllocationAmount(TotalAllocatedAmount(receipt.AllocatedAmount))
+	if err != nil {
+		return err
+	}
+
+	account.Receipts = append(account.Receipts, receipt)
+
+	return nil
+}
+
+func (account *Account) IncreaseTotalAllocationAmount(amount TotalAllocatedAmount) error {
+	newAmount := account.TotalAllocatedAmount.Int64() + amount.Int64()
+
+	value, err := NewTotalAllocatedAmount(newAmount)
+	if err != nil {
+		return err
+	}
+
+	err = account.SetTotalAllocationAmount(value)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (account *Account) SetTotalAllocationAmount(amount TotalAllocatedAmount) error {
+
 	// ISA and SIPP accounts can't exceed Nominal Amount
 	if account.WrapperType == WrapperTypeISA || account.WrapperType == WrapperTypeSIPP {
-		if account.NominalAmount.Int64() < account.TotalAllocatedAmount.Int64()+receipt.AllocatedAmount.Int64() {
+		if account.NominalAmount.Int64() < amount.Int64() {
 			return ErrNominalExceeded
 		}
 	}
 
-	account.TotalAllocatedAmount += TotalAllocatedAmount(receipt.AllocatedAmount)
-	account.Receipts = append(account.Receipts, receipt)
-
+	account.TotalAllocatedAmount = amount
 	return nil
 }

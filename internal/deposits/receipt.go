@@ -32,6 +32,25 @@ func NewReceipt(allocatedAmount int64) (*Receipt, error) {
 	}, nil
 }
 
+func ParseReceipt(id string, allocatedAmount int64) (*Receipt, error) {
+	receiptId, err := ParseReceiptId(id)
+	if err != nil {
+		return nil, err
+	}
+
+	receiptAllocatedAmount, err := NewAllocatedAmount(allocatedAmount)
+	if err != nil {
+		return nil, err
+	}
+
+	receipt := &Receipt{
+		Id:              receiptId,
+		AllocatedAmount: receiptAllocatedAmount,
+	}
+
+	return receipt, nil
+}
+
 func NewAllocatedAmount(amount int64) (AllocatedAmount, error) {
 	if amount < 0 {
 		return 0, ErrAllocatedAmountNegative

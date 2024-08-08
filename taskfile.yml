@@ -4,7 +4,7 @@ tasks:
   test:
     silent: true
     cmds:
-      - go test .
+      - go test -cover ./...
 
   buf-gen:
     dir: ./application/grpc/protos
