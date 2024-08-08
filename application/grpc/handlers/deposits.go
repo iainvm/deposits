@@ -22,6 +22,32 @@ func NewDepositsHandler(log *slog.Logger, depositsService *deposits.Service) *De
 	}
 }
 
+func (h *DepositsHandler) ReceiveReceipt(ctx context.Context, req *connect.Request[depositsv1.ReceiveReceiptRequest]) (*connect.Response[depositsv1.ReceiveReceiptResponse], error) {
+	h.log.With("header", req.Header()).With("request", req.Msg).Info("Receive Receipt Called")
+
+	accountId, err := deposits.ParseAccountId(req.Msg.AccountId)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+
+	receipt, err := deposits.NewReceipt(req.Msg.Receipt.AllocatedAmount)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+
+	err = h.depostitsService.ReceiveReceipt(ctx, accountId, receipt)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create response
+	res := connect.NewResponse(&depositsv1.ReceiveReceiptResponse{
+		Receipt: createResponseReceipt(*receipt),
+	})
+	res.Header().Set("Deposit-Version", "v1")
+	return res, nil
+}
+
 func (h *DepositsHandler) Get(ctx context.Context, req *connect.Request[depositsv1.GetRequest]) (*connect.Response[depositsv1.GetResponse], error) {
 	h.log.With("header", req.Header()).With("request", req.Msg).Info("Get Called")
 
@@ -121,10 +147,10 @@ func createResponseDeposit(deposit deposits.Deposit) *depositsv1.Deposit {
 		// Attach Accounts
 		for _, account := range pot.Accounts {
 			responseAccount := &depositsv1.Account{
-				Id:              account.Id.String(),
-				WrapperType:     depositsv1.WrapperType(account.WrapperType),
-				NominalAmount:   account.NominalAmount.Int64(),
-				AllocatedAmount: account.AllocatedAmount.Int64(),
+				Id:                   account.Id.String(),
+				WrapperType:          depositsv1.WrapperType(account.WrapperType),
+				NominalAmount:        account.NominalAmount.Int64(),
+				TotalAllocatedAmount: account.TotalAllocatedAmount.Int64(),
 			}
 
 			responsePot.Accounts = append(responsePot.Accounts, responseAccount)
@@ -134,4 +160,13 @@ func createResponseDeposit(deposit deposits.Deposit) *depositsv1.Deposit {
 	}
 
 	return response
+}
+
+func createResponseReceipt(receipt deposits.Receipt) *depositsv1.Receipt {
+	res := &depositsv1.Receipt{
+		Id:              receipt.Id.String(),
+		AllocatedAmount: receipt.AllocatedAmount.Int64(),
+	}
+
+	return res
 }

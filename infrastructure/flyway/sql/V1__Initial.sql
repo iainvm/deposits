@@ -21,12 +21,13 @@ CREATE TABLE accounts (
     pot_id VARCHAR,
     wrapper_type INTEGER,
     nominal_amount INTEGER,
+    total_allocated_amount INTEGER,
     FOREIGN KEY (pot_id) REFERENCES pots(id)
 );
 
 CREATE TABLE receipts (
     id VARCHAR PRIMARY KEY,
     account_id VARCHAR,
-    amount INTEGER,
+    allocated_amount INTEGER,
     FOREIGN KEY (account_id) REFERENCES accounts(id)
 );

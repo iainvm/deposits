@@ -7,6 +7,21 @@ option go_package = "deposits/v1;depositsv1";
 service DepositsService {
   rpc Create(CreateRequest) returns (CreateResponse);
   rpc Get(GetRequest) returns (GetResponse);
+  rpc ReceiveReceipt(ReceiveReceiptRequest) returns (ReceiveReceiptResponse);
+}
+
+message ReceiveReceiptRequest {
+  string account_id = 1;
+  Receipt receipt = 2;
+}
+
+message ReceiveReceiptResponse {
+  Receipt receipt = 1;
+}
+
+message Receipt {
+  string id = 1;
+  int64 allocated_amount = 2;
 }
 
 message GetRequest {
@@ -48,5 +63,5 @@ message Account {
   string id = 1;
   WrapperType wrapper_type = 2;
   int64 nominal_amount = 3;
-  int64 allocated_amount = 4;
+  int64 total_allocated_amount = 4;
 }

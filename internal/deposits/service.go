@@ -10,7 +10,10 @@ type Repository interface {
 	SaveDeposit(ctx context.Context, investorId investors.InvestorId, deposit Deposit) error
 	SavePot(ctx context.Context, depositId DepositId, pot Pot) error
 	SaveAccount(ctx context.Context, potId PotId, account Account) error
+	SaveReceipt(ctx context.Context, accountId AccountId, receipt Receipt) error
 	GetFullDeposit(ctx context.Context, depositId DepositId) (*Deposit, error)
+	GetAccount(ctx context.Context, accountId AccountId) (*Account, error)
+	UpdateAccount(ctx context.Context, account Account) error
 }
 
 type Service struct {
@@ -21,6 +24,35 @@ func NewService(repository Repository) *Service {
 	return &Service{
 		repository: repository,
 	}
+}
+
+func (service *Service) ReceiveReceipt(ctx context.Context, accountId AccountId, receipt *Receipt) error {
+
+	// Get Account
+	account, err := service.repository.GetAccount(ctx, accountId)
+	if err != nil {
+		return err
+	}
+
+	// Validate we can add the receipt to the account
+	err = account.AddReceipt(receipt)
+	if err != nil {
+		return err
+	}
+
+	// Save the receipt
+	err = service.repository.SaveReceipt(ctx, account.Id, *receipt)
+	if err != nil {
+		return err
+	}
+
+	// Update the account
+	err = service.repository.UpdateAccount(ctx, *account)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (service *Service) Get(ctx context.Context, id DepositId) (*Deposit, error) {

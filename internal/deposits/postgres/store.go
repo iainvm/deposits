@@ -29,13 +29,14 @@ type DepositRow struct {
 }
 
 type FullDeposit struct {
-	Id                   string `db:"id"`
-	InvestorId           string `db:"investor_id"`
-	PotId                string `db:"pots_id"`
-	PotName              string `db:"pots_name"`
-	AccountId            string `db:"account_id"`
-	AccountWrapperType   int    `db:"account_wrapper_type"`
-	AccountNominalAmount int64  `db:"account_nominal_amount"`
+	Id                          string `db:"id"`
+	InvestorId                  string `db:"investor_id"`
+	PotId                       string `db:"pots_id"`
+	PotName                     string `db:"pots_name"`
+	AccountId                   string `db:"account_id"`
+	AccountWrapperType          int    `db:"account_wrapper_type"`
+	AccountNominalAmount        int64  `db:"account_nominal_amount"`
+	AccountTotalAllocatedAmount int64  `db:"account_total_allocated_amount"`
 }
 
 func (store Store) GetFullDeposit(ctx context.Context, depositId deposits.DepositId) (*deposits.Deposit, error) {
@@ -46,7 +47,8 @@ func (store Store) GetFullDeposit(ctx context.Context, depositId deposits.Deposi
 		p.name AS "pots_name",
 		a.id AS "account_id",
 		a.wrapper_type AS "account_wrapper_type",
-		a.nominal_amount AS "account_nominal_amount"
+		a.nominal_amount AS "account_nominal_amount",
+		a.total_allocated_amount AS "account_total_allocated_amount"
 	FROM deposits d
 	JOIN pots p ON d.id = p.deposit_id
 	JOIN accounts a ON p.id = a.pot_id
@@ -101,7 +103,7 @@ func createDomainDeposit(rows []FullDeposit) (*deposits.Deposit, error) {
 			pot = deposit.Pots[potIndex]
 		}
 
-		account, err := deposits.ParseAccount(row.AccountId, row.AccountWrapperType, row.AccountNominalAmount)
+		account, err := deposits.ParseAccount(row.AccountId, row.AccountWrapperType, row.AccountNominalAmount, row.AccountTotalAllocatedAmount)
 		if err != nil {
 			return nil, err
 		}
@@ -195,25 +197,112 @@ func (store Store) SavePot(ctx context.Context, depositId deposits.DepositId, po
 }
 
 type AccountRow struct {
-	Id            string `db:"id"`
-	PotId         string `db:"pot_id"`
-	WrapperType   int    `db:"wrapper_type"`
-	NominalAmount int64  `db:"nominal_amount"`
+	Id                   string `db:"id"`
+	PotId                string `db:"pot_id"`
+	WrapperType          int    `db:"wrapper_type"`
+	NominalAmount        int64  `db:"nominal_amount"`
+	TotalAllocatedAmount int64  `db:"total_allocated_amount"`
+}
+
+func (store Store) GetAccount(ctx context.Context, accountId deposits.AccountId) (*deposits.Account, error) {
+	const query = `--sql
+	SELECT *
+	FROM accounts
+	WHERE id=$1
+	`
+
+	row := AccountRow{}
+	err := store.db.Get(&row, query, accountId.String())
+	if err != nil {
+		return nil, err
+	}
+
+	deposit, err := deposits.ParseAccount(row.Id, row.WrapperType, row.NominalAmount, row.TotalAllocatedAmount)
+	if err != nil {
+		return nil, err
+	}
+
+	return deposit, nil
 }
 
 func (store Store) SaveAccount(ctx context.Context, potId deposits.PotId, account deposits.Account) error {
 	// Define query separately for easy editting
 	const query = `--sql
-	INSERT INTO accounts (id, pot_id, wrapper_type, nominal_amount)
-	VALUES (:id, :pot_id, :wrapper_type, :nominal_amount)
+	INSERT INTO accounts (id, pot_id, wrapper_type, nominal_amount, total_allocated_amount)
+	VALUES (:id, :pot_id, :wrapper_type, :nominal_amount, :total_allocated_amount)
 	`
 
 	// Create Row
 	row := AccountRow{
-		Id:            account.Id.String(),
-		PotId:         potId.String(),
-		WrapperType:   account.WrapperType.Int(),
-		NominalAmount: account.NominalAmount.Int64(),
+		Id:                   account.Id.String(),
+		PotId:                potId.String(),
+		WrapperType:          account.WrapperType.Int(),
+		NominalAmount:        account.NominalAmount.Int64(),
+		TotalAllocatedAmount: account.TotalAllocatedAmount.Int64(),
+	}
+
+	// Execute query
+	_, err := store.db.NamedExecContext(
+		ctx,
+		query,
+		row,
+	)
+	if err != nil {
+		return errors.Join(ErrSaveFailed, err)
+	}
+
+	return nil
+}
+
+func (store Store) UpdateAccount(ctx context.Context, account deposits.Account) error {
+	// Define query separately for easy editting
+	const query = `--sql
+	UPDATE accounts
+	SET wrapper_type=:wrapper_type,
+		nominal_amount=:nominal_amount,
+		total_allocated_amount=:total_allocated_amount
+	WHERE id=:id
+	`
+
+	// Create Row
+	row := AccountRow{
+		Id:                   account.Id.String(),
+		WrapperType:          account.WrapperType.Int(),
+		NominalAmount:        account.NominalAmount.Int64(),
+		TotalAllocatedAmount: account.TotalAllocatedAmount.Int64(),
+	}
+
+	// Execute query
+	_, err := store.db.NamedExecContext(
+		ctx,
+		query,
+		row,
+	)
+	if err != nil {
+		return errors.Join(ErrSaveFailed, err)
+	}
+
+	return nil
+}
+
+type ReceiptRow struct {
+	Id              string `db:"id"`
+	AccountId       string `db:"account_id"`
+	AllocatedAmount int64  `db:"allocated_amount"`
+}
+
+func (store Store) SaveReceipt(ctx context.Context, accountId deposits.AccountId, receipt deposits.Receipt) error {
+	// Define query separately for easy editting
+	const query = `--sql
+	INSERT INTO receipts (id, account_id, allocated_amount)
+	VALUES (:id, :account_id, :allocated_amount)
+	`
+
+	// Create Row
+	row := ReceiptRow{
+		Id:              receipt.Id.String(),
+		AccountId:       accountId.String(),
+		AllocatedAmount: receipt.AllocatedAmount.Int64(),
 	}
 
 	// Execute query
