@@ -4,13 +4,17 @@ package deposits.v1;
 
 option go_package = "deposits/v1;depositsv1";
 
+message Investor {
+    string id = 1;
+    string name = 2;
+}
+
 message OnboardRequest {
-    string name = 1;
+    Investor investor = 1;
 }
 
 message OnboardResponse {
-    string id = 1;
-    string name = 2;
+    Investor investor = 1;
 }
 
 service InvestorsService {
