@@ -27,8 +27,7 @@ type Investor struct {
 	Name string `db:"name"`
 }
 
-// Create
-func (store Store) Create(ctx context.Context, investor investors.Investor) error {
+func (store Store) Save(ctx context.Context, investor investors.Investor) error {
 	// Define query separately for easy editting
 	const query = `--sql
 	INSERT INTO investors (id, name)

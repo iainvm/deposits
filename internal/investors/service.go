@@ -3,7 +3,7 @@ package investors
 import "context"
 
 type Repository interface {
-	Create(ctx context.Context, investor Investor) error
+	Save(ctx context.Context, investor Investor) error
 }
 
 type Service struct {
@@ -16,7 +16,7 @@ func NewService(store Repository) *Service {
 	}
 }
 
-func (service Service) Create(ctx context.Context, name string) (Investor, error) {
+func (service Service) Onboard(ctx context.Context, name string) (Investor, error) {
 
 	// Create Data, ensures valid
 	inv, err := New(name)
@@ -25,7 +25,7 @@ func (service Service) Create(ctx context.Context, name string) (Investor, error
 	}
 
 	// Store data
-	err = service.repository.Create(ctx, inv)
+	err = service.repository.Save(ctx, inv)
 	if err != nil {
 		return Investor{}, err
 	}

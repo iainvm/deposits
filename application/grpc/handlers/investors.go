@@ -26,7 +26,7 @@ func (h *InvestorsHandler) Onboard(ctx context.Context, req *connect.Request[dep
 	h.log.With("header", req.Header()).With("request", req.Msg).Info("Onboard Called")
 
 	//
-	investor, err := h.investorsService.Create(ctx, req.Msg.Investor.Name)
+	investor, err := h.investorsService.Onboard(ctx, req.Msg.Investor.Name)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
