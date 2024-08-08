@@ -10,8 +10,6 @@ import (
 
 var ErrCreationFailed = errors.New("failed to create investor")
 
-const Table = "investors"
-
 type Store struct {
 	db *sqlx.DB
 }
@@ -22,23 +20,28 @@ func NewStore(db *sqlx.DB) Store {
 	}
 }
 
-type Investor struct {
+type InvestorRow struct {
 	Id   string `db:"id"`
 	Name string `db:"name"`
 }
 
-func (store Store) Save(ctx context.Context, investor investors.Investor) error {
+func (store Store) SaveInvestor(ctx context.Context, investor *investors.Investor) error {
 	// Define query separately for easy editting
 	const query = `--sql
 	INSERT INTO investors (id, name)
 	VALUES (:id, :name)
 	`
+	// Create Row
+	row := InvestorRow{
+		Id:   investor.Id.String(),
+		Name: investor.Name.String(),
+	}
 
 	// Execute query
 	_, err := store.db.NamedExecContext(
 		ctx,
 		query,
-		investor,
+		row,
 	)
 	if err != nil {
 		return errors.Join(ErrCreationFailed, err)

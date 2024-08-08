@@ -6,21 +6,20 @@ CREATE TABLE investors (
 CREATE TABLE deposits (
     id VARCHAR PRIMARY KEY,
     investor_id VARCHAR,
-    nominal INTEGER,
     FOREIGN KEY (investor_id) REFERENCES investors(id)
 );
 
 CREATE TABLE pots (
     id VARCHAR PRIMARY KEY,
     deposit_id VARCHAR,
+    name VARCHAR,
     FOREIGN KEY (deposit_id) REFERENCES deposits(id)
 );
 
 CREATE TABLE accounts (
     id VARCHAR PRIMARY KEY,
     pot_id VARCHAR,
-    nominal INTEGER,
-    amount INTEGER,
+    nominal_amount INTEGER,
     FOREIGN KEY (pot_id) REFERENCES pots(id)
 );
 

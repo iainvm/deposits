@@ -33,25 +33,19 @@ const (
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
-	// DepositsServiceCreateDepositProcedure is the fully-qualified name of the DepositsService's
-	// CreateDeposit RPC.
-	DepositsServiceCreateDepositProcedure = "/deposits.v1.DepositsService/CreateDeposit"
-	// DepositsServiceRetreiveDepositProcedure is the fully-qualified name of the DepositsService's
-	// RetreiveDeposit RPC.
-	DepositsServiceRetreiveDepositProcedure = "/deposits.v1.DepositsService/RetreiveDeposit"
+	// DepositsServiceCreateProcedure is the fully-qualified name of the DepositsService's Create RPC.
+	DepositsServiceCreateProcedure = "/deposits.v1.DepositsService/Create"
 )
 
 // These variables are the protoreflect.Descriptor objects for the RPCs defined in this package.
 var (
-	depositsServiceServiceDescriptor               = v1.File_deposits_v1_deposits_proto.Services().ByName("DepositsService")
-	depositsServiceCreateDepositMethodDescriptor   = depositsServiceServiceDescriptor.Methods().ByName("CreateDeposit")
-	depositsServiceRetreiveDepositMethodDescriptor = depositsServiceServiceDescriptor.Methods().ByName("RetreiveDeposit")
+	depositsServiceServiceDescriptor      = v1.File_deposits_v1_deposits_proto.Services().ByName("DepositsService")
+	depositsServiceCreateMethodDescriptor = depositsServiceServiceDescriptor.Methods().ByName("Create")
 )
 
 // DepositsServiceClient is a client for the deposits.v1.DepositsService service.
 type DepositsServiceClient interface {
-	CreateDeposit(context.Context, *connect.Request[v1.CreateDepositRequest]) (*connect.Response[v1.CreateDepositResponse], error)
-	RetreiveDeposit(context.Context, *connect.Request[v1.RetreiveDepositRequest]) (*connect.Response[v1.RetreiveDepositResponse], error)
+	Create(context.Context, *connect.Request[v1.CreateRequest]) (*connect.Response[v1.CreateResponse], error)
 }
 
 // NewDepositsServiceClient constructs a client for the deposits.v1.DepositsService service. By
@@ -64,16 +58,10 @@ type DepositsServiceClient interface {
 func NewDepositsServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) DepositsServiceClient {
 	baseURL = strings.TrimRight(baseURL, "/")
 	return &depositsServiceClient{
-		createDeposit: connect.NewClient[v1.CreateDepositRequest, v1.CreateDepositResponse](
+		create: connect.NewClient[v1.CreateRequest, v1.CreateResponse](
 			httpClient,
-			baseURL+DepositsServiceCreateDepositProcedure,
-			connect.WithSchema(depositsServiceCreateDepositMethodDescriptor),
-			connect.WithClientOptions(opts...),
-		),
-		retreiveDeposit: connect.NewClient[v1.RetreiveDepositRequest, v1.RetreiveDepositResponse](
-			httpClient,
-			baseURL+DepositsServiceRetreiveDepositProcedure,
-			connect.WithSchema(depositsServiceRetreiveDepositMethodDescriptor),
+			baseURL+DepositsServiceCreateProcedure,
+			connect.WithSchema(depositsServiceCreateMethodDescriptor),
 			connect.WithClientOptions(opts...),
 		),
 	}
@@ -81,24 +69,17 @@ func NewDepositsServiceClient(httpClient connect.HTTPClient, baseURL string, opt
 
 // depositsServiceClient implements DepositsServiceClient.
 type depositsServiceClient struct {
-	createDeposit   *connect.Client[v1.CreateDepositRequest, v1.CreateDepositResponse]
-	retreiveDeposit *connect.Client[v1.RetreiveDepositRequest, v1.RetreiveDepositResponse]
+	create *connect.Client[v1.CreateRequest, v1.CreateResponse]
 }
 
-// CreateDeposit calls deposits.v1.DepositsService.CreateDeposit.
-func (c *depositsServiceClient) CreateDeposit(ctx context.Context, req *connect.Request[v1.CreateDepositRequest]) (*connect.Response[v1.CreateDepositResponse], error) {
-	return c.createDeposit.CallUnary(ctx, req)
-}
-
-// RetreiveDeposit calls deposits.v1.DepositsService.RetreiveDeposit.
-func (c *depositsServiceClient) RetreiveDeposit(ctx context.Context, req *connect.Request[v1.RetreiveDepositRequest]) (*connect.Response[v1.RetreiveDepositResponse], error) {
-	return c.retreiveDeposit.CallUnary(ctx, req)
+// Create calls deposits.v1.DepositsService.Create.
+func (c *depositsServiceClient) Create(ctx context.Context, req *connect.Request[v1.CreateRequest]) (*connect.Response[v1.CreateResponse], error) {
+	return c.create.CallUnary(ctx, req)
 }
 
 // DepositsServiceHandler is an implementation of the deposits.v1.DepositsService service.
 type DepositsServiceHandler interface {
-	CreateDeposit(context.Context, *connect.Request[v1.CreateDepositRequest]) (*connect.Response[v1.CreateDepositResponse], error)
-	RetreiveDeposit(context.Context, *connect.Request[v1.RetreiveDepositRequest]) (*connect.Response[v1.RetreiveDepositResponse], error)
+	Create(context.Context, *connect.Request[v1.CreateRequest]) (*connect.Response[v1.CreateResponse], error)
 }
 
 // NewDepositsServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -107,24 +88,16 @@ type DepositsServiceHandler interface {
 // By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
 // and JSON codecs. They also support gzip compression.
 func NewDepositsServiceHandler(svc DepositsServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
-	depositsServiceCreateDepositHandler := connect.NewUnaryHandler(
-		DepositsServiceCreateDepositProcedure,
-		svc.CreateDeposit,
-		connect.WithSchema(depositsServiceCreateDepositMethodDescriptor),
-		connect.WithHandlerOptions(opts...),
-	)
-	depositsServiceRetreiveDepositHandler := connect.NewUnaryHandler(
-		DepositsServiceRetreiveDepositProcedure,
-		svc.RetreiveDeposit,
-		connect.WithSchema(depositsServiceRetreiveDepositMethodDescriptor),
+	depositsServiceCreateHandler := connect.NewUnaryHandler(
+		DepositsServiceCreateProcedure,
+		svc.Create,
+		connect.WithSchema(depositsServiceCreateMethodDescriptor),
 		connect.WithHandlerOptions(opts...),
 	)
 	return "/deposits.v1.DepositsService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
-		case DepositsServiceCreateDepositProcedure:
-			depositsServiceCreateDepositHandler.ServeHTTP(w, r)
-		case DepositsServiceRetreiveDepositProcedure:
-			depositsServiceRetreiveDepositHandler.ServeHTTP(w, r)
+		case DepositsServiceCreateProcedure:
+			depositsServiceCreateHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -134,10 +107,6 @@ func NewDepositsServiceHandler(svc DepositsServiceHandler, opts ...connect.Handl
 // UnimplementedDepositsServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedDepositsServiceHandler struct{}
 
-func (UnimplementedDepositsServiceHandler) CreateDeposit(context.Context, *connect.Request[v1.CreateDepositRequest]) (*connect.Response[v1.CreateDepositResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("deposits.v1.DepositsService.CreateDeposit is not implemented"))
-}
-
-func (UnimplementedDepositsServiceHandler) RetreiveDeposit(context.Context, *connect.Request[v1.RetreiveDepositRequest]) (*connect.Response[v1.RetreiveDepositResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("deposits.v1.DepositsService.RetreiveDeposit is not implemented"))
+func (UnimplementedDepositsServiceHandler) Create(context.Context, *connect.Request[v1.CreateRequest]) (*connect.Response[v1.CreateResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("deposits.v1.DepositsService.Create is not implemented"))
 }

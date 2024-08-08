@@ -11,24 +11,30 @@ import (
 )
 
 type InvestorsHandler struct {
-	investorsService *investors.Service
 	log              *slog.Logger
+	investorsService *investors.Service
 }
 
-func NewInvestorsHandler(service *investors.Service, log *slog.Logger) *InvestorsHandler {
+func NewInvestorsHandler(log *slog.Logger, service *investors.Service) *InvestorsHandler {
 	return &InvestorsHandler{
-		investorsService: service,
 		log:              log,
+		investorsService: service,
 	}
 }
 
 func (h *InvestorsHandler) Onboard(ctx context.Context, req *connect.Request[depositsv1.OnboardRequest]) (*connect.Response[depositsv1.OnboardResponse], error) {
 	h.log.With("header", req.Header()).With("request", req.Msg).Info("Onboard Called")
 
-	//
-	investor, err := h.investorsService.Onboard(ctx, req.Msg.Investor.Name)
+	// Create domain model
+	investor, err := investors.New(req.Msg.Investor.Name)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+
+	// Onboard
+	err = h.investorsService.Onboard(ctx, investor)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
 	// Create response

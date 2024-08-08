@@ -4,28 +4,40 @@ package deposits.v1;
 
 option go_package = "deposits/v1;depositsv1";
 
-message CreateDepositRequest {
-    string investor_id = 1;
-    string name = 2;
-}
-
-message CreateDepositResponse {
-    string id = 1;
-    string name = 2;
-    int64 nomainal = 3;
-}
-
-message RetreiveDepositRequest {
-    string id = 1;
-}
-
-message RetreiveDepositResponse {
-    string id = 1;
-    string name = 2;
-    int64 nomainal = 3;
-}
-
 service DepositsService {
-    rpc CreateDeposit(CreateDepositRequest) returns (CreateDepositResponse) {}
-    rpc RetreiveDeposit(RetreiveDepositRequest) returns (RetreiveDepositResponse) {}
+  rpc Create(CreateRequest) returns (CreateResponse);
+}
+
+message CreateRequest {
+  string investor_id = 1;
+  Deposit deposit = 2;
+}
+
+message CreateResponse {
+  Deposit deposit = 1;
+}
+
+message Deposit {
+  string id = 1;
+  repeated Pot pots = 2;
+}
+
+message Pot {
+  string id = 1;
+  string name = 2;
+  repeated Account accounts = 3;
+}
+
+enum WrapperType {
+  WRAPPER_TYPE_UNSPECIFIED = 0;
+  WRAPPER_TYPE_GIA = 1;
+  WRAPPER_TYPE_ISA = 2;
+  WRAPPER_TYPE_SIPP = 3;
+}
+
+message Account {
+  string id = 1;
+  WrapperType wrapper_type = 2;
+  int64 nominal_amount = 3;
+  int64 allocated_amount = 4;
 }

@@ -41,10 +41,42 @@ tasks:
           }
           EOM
 
-  deposit-setup:
+  deposit-create:
     silent: true
     cmds:
       - cmd: |
-          grpcurl -protoset <(buf build -o -) -plaintext -d @ localhost:8080 deposits.v1.InvestorsService/Onboard <<EOM
-          {"name": "Jane"}
+          grpcurl -protoset <(buf build -o -) -plaintext -d @ localhost:8080 deposits.v1.DepositsService/Create <<EOM
+          {
+            "investor_id": "{{.CLI_ARGS}}",
+            "deposit": {
+                "pots": [
+                    {
+                        "name": "Pot A",
+                        "accounts": [
+                            {
+                                "wrapper_type": 1,
+                                "nominal_amount": 10000
+                            },
+                            {
+                                "wrapper_type": 2,
+                                "nominal_amount": 20000
+                            },
+                            {
+                                "wrapper_type": 3,
+                                "nominal_amount": 50000
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Pot B",
+                        "accounts": [
+                            {
+                                "wrapper_type": 1,
+                                "nominal_amount": 20000
+                            }
+                        ]
+                    }
+                ]
+            }
+          }
           EOM

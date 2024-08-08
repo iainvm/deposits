@@ -14,8 +14,10 @@ import (
 	"github.com/iainvm/deposits/application/grpc/gen/deposits/v1/depositsv1connect"
 	"github.com/iainvm/deposits/application/grpc/handlers"
 	"github.com/iainvm/deposits/common/postgres"
+	"github.com/iainvm/deposits/internal/deposits"
+	depositsStore "github.com/iainvm/deposits/internal/deposits/postgres"
 	"github.com/iainvm/deposits/internal/investors"
-	store "github.com/iainvm/deposits/internal/investors/postgres"
+	investorsStore "github.com/iainvm/deposits/internal/investors/postgres"
 )
 
 type DBConfig struct {
@@ -65,13 +67,26 @@ func main() {
 	logger.With("host", config.DBConfig.Host).With("port", config.DBConfig.Port).Info("Connected to DB")
 
 	// Investors Handler
-	investorsStore := store.NewStore(db)
-	investorsService := investors.NewService(investorsStore)
-	investorsServer := handlers.NewInvestorsHandler(investorsService, logger)
+	investorsServer := handlers.NewInvestorsHandler(
+		logger,
+		investors.NewService(
+			investorsStore.NewStore(db),
+		),
+	)
+
+	// Deposits Handler
+	depositsStore := handlers.NewDepositsHandler(
+		logger,
+		deposits.NewService(
+			depositsStore.NewStore(db),
+		),
+	)
 
 	// Register handlers
 	mux := http.NewServeMux()
 	path, handler := depositsv1connect.NewInvestorsServiceHandler(investorsServer)
+	mux.Handle(path, handler)
+	path, handler = depositsv1connect.NewDepositsServiceHandler(depositsStore)
 	mux.Handle(path, handler)
 
 	// Listen

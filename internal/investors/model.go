@@ -2,7 +2,6 @@ package investors
 
 import (
 	"errors"
-	"log/slog"
 
 	"github.com/google/uuid"
 )
@@ -16,44 +15,50 @@ var (
 )
 
 type Investor struct {
-	Id   Id
+	Id   InvestorId
 	Name Name
 }
 
-func New(name string) (Investor, error) {
-	id, err := uuid.NewRandom()
+func New(name string) (*Investor, error) {
+	id, err := newInvestorId()
 	if err != nil {
-		return Investor{}, errors.Join(ErrIdGeneration, err)
+		return nil, nil
 	}
 
-	_name, err := NewName(name)
+	investorsName, err := NewName(name)
 	if err != nil {
-		return Investor{}, errors.Join(ErrInvalidInvestor, err)
+		return nil, errors.Join(ErrInvalidInvestor, err)
 	}
 
-	investor := Investor{
-		Id:   Id(id.String()),
-		Name: _name,
+	investor := &Investor{
+		Id:   id,
+		Name: investorsName,
 	}
-
-	// TODO: Call to store
 
 	return investor, nil
 }
 
-type Id string
+type InvestorId string
 
-func NewId(id string) (Id, error) {
-	_, err := uuid.Parse(id)
+func newInvestorId() (InvestorId, error) {
+	id, err := uuid.NewRandom()
 	if err != nil {
-		slog.With("id", id).Error("invalid id")
-		return "", errors.Join(ErrInvalidId, err)
+		return "", errors.Join(ErrIdGeneration, err)
 	}
 
-	return Id(id), nil
+	return InvestorId(id.String()), nil
 }
 
-func (id Id) String() string {
+func ParseInvestorId(id string) (InvestorId, error) {
+	_, err := uuid.Parse(id)
+	if err != nil {
+		return "", err
+	}
+
+	return InvestorId(id), nil
+}
+
+func (id InvestorId) String() string {
 	return string(id)
 }
 
